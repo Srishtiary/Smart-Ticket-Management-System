@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: smart-ticket-management-system
+  mongodb:
+    uri: mongodb+srv://aryashristi27_db_user:KuKu%402003@cluster0.xxs2l2w.mongodb.net/ticketapp?retryWrites=true&w=majority

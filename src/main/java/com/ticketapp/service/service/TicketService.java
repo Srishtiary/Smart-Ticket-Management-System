@@ -2,6 +2,8 @@ package com.ticketapp.service.service;
 
 import com.ticketapp.service.dto.TicketRequest;
 import com.ticketapp.service.dto.TicketResponse;
+import com.ticketapp.service.exception.AccessDeniedCustomException;
+import com.ticketapp.service.exception.ResourceNotFoundException;
 import com.ticketapp.service.model.Role;
 import com.ticketapp.service.model.Ticket;
 import com.ticketapp.service.model.TicketPriority;
@@ -33,7 +35,7 @@ public class TicketService {
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found in database"));
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found in database"));
     }
 
     /**
@@ -88,13 +90,13 @@ public class TicketService {
 
     public TicketResponse getTicketById(String id) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         User currentUser = getCurrentUser();
 
         // If the user is a standard USER, they can only view their own tickets
         if (currentUser.getRole() == Role.USER && !currentUser.getId().equals(ticket.getCreatedBy())) {
-            throw new IllegalArgumentException("You do not have permission to view this ticket");
+            throw new AccessDeniedCustomException("You do not have permission to view this ticket");
         }
 
         return mapToResponse(ticket);
@@ -102,7 +104,7 @@ public class TicketService {
 
     public TicketResponse updateTicketStatus(String id, TicketStatus newStatus) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         User currentUser = getCurrentUser();
 
@@ -111,7 +113,7 @@ public class TicketService {
         boolean isAssignedUser = currentUser.getId().equals(ticket.getAssignedTo());
 
         if (!isAdmin && !isAssignedUser) {
-            throw new IllegalArgumentException("Only an admin or the assigned user can update the ticket status");
+            throw new AccessDeniedCustomException("Only an admin or the assigned user can update the ticket status");
         }
 
         ticket.setStatus(newStatus);
@@ -125,15 +127,15 @@ public class TicketService {
         User currentUser = getCurrentUser();
 
         if (currentUser.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("Only an admin can assign tickets");
+            throw new AccessDeniedCustomException("Only an admin can assign tickets");
         }
 
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         // Verify the user being assigned actually exists
         if (!userRepository.existsById(assignToUserId)) {
-            throw new IllegalArgumentException("Target assignment user does not exist");
+            throw new ResourceNotFoundException("Target assignment user does not exist");
         }
 
         ticket.setAssignedTo(assignToUserId);
@@ -147,11 +149,11 @@ public class TicketService {
         User currentUser = getCurrentUser();
 
         if (currentUser.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("Only an admin can delete tickets");
+            throw new AccessDeniedCustomException("Only an admin can delete tickets");
         }
 
         if (!ticketRepository.existsById(id)) {
-            throw new IllegalArgumentException("Ticket not found");
+            throw new ResourceNotFoundException("Ticket not found");
         }
 
         ticketRepository.deleteById(id);

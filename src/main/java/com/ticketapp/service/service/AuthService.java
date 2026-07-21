@@ -3,6 +3,7 @@ package com.ticketapp.service.service;
 import com.ticketapp.service.dto.AuthResponse;
 import com.ticketapp.service.dto.LoginRequest;
 import com.ticketapp.service.dto.RegisterRequest;
+import com.ticketapp.service.exception.ResourceNotFoundException;
 import com.ticketapp.service.model.Role;
 import com.ticketapp.service.model.User;
 import com.ticketapp.service.repository.UserRepository;
@@ -72,7 +73,7 @@ public class AuthService {
 
         // 2. Fetch the user to get their role for the JWT
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         // 3. Generate JWT token
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());

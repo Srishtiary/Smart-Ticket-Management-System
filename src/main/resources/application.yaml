@@ -6,3 +6,7 @@ spring:
     name: smart-ticket-management-system
   mongodb:
     uri: mongodb+srv://aryashristi27_db_user:KuKu%402003@cluster0.xxs2l2w.mongodb.net/ticketapp?retryWrites=true&w=majority
+
+jwt:
+  secret: <your-256-bit-secret-key-here>
+  expiration: 300000 # 5 minutes in milliseconds

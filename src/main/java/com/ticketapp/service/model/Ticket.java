@@ -9,9 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-/**
- * Represents a support ticket in the system.
- */
 @Data
 @Builder
 @NoArgsConstructor
